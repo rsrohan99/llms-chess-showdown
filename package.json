@@ -9,9 +9,12 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "chess.js": "^1.0.0-beta.8",
+    "html2canvas": "^1.4.1",
+    "next": "14.2.7",
     "react": "^18",
-    "react-dom": "^18",
-    "next": "14.2.7"
+    "react-chessboard": "^4.7.1",
+    "react-dom": "^18"
   },
   "devDependencies": {
     "typescript": "^5",
