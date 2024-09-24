@@ -7,6 +7,8 @@ import { Chessboard } from "react-chessboard";
 import { CustomSquareProps } from "react-chessboard/dist/chessboard/types";
 import { describeMove } from "../utils/moves";
 import { getNextMove } from "../actions/llm";
+import { IPlayer } from "../utils/types";
+import { llms } from "../utils/models";
 
 function delay(seconds: number) {
   return new Promise((resolve) => setTimeout(resolve, seconds * 1000));
@@ -56,12 +58,24 @@ function ChessBoard() {
   const [allMovesString, setAllMovesString] = useState([]);
   const [isPlaying, setIsPlaying] = useState(false); // Play/Pause state
   const [isGameOver, setIsGameOver] = useState(false); // Game over state
-  const [gameInterval, setGameInterval] = useState<NodeJS.Timeout | null>(null); // Reference to the interval
+  // const [gameInterval, setGameInterval] = useState<NodeJS.Timeout | null>(null); // Reference to the interval
   const intervalRef = useRef<NodeJS.Timeout>(null); // For maintaining interval across renders
   const endDivRef = useRef<HTMLDivElement>(null);
   const [thinkingMessage, setThinkingMessage] = useState("");
   const [resultMessage, setResultMessage] = useState("");
   const isMoveInProgress = useRef(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [savedMessage, setSavedMessage] = useState("");
+
+  const whiteModalRef = useRef<HTMLSelectElement | null>(null);
+  const blackModalRef = useRef<HTMLSelectElement | null>(null);
+  const whiteApiKeyRef = useRef<HTMLInputElement | null>(null);
+  const blackApiKeyRef = useRef<HTMLInputElement | null>(null);
+
+  const playersRef = useRef<Record<string, IPlayer | undefined>>({
+    w: { color: "White", llm: llms[0], apiKey: "" },
+    b: { color: "Black", llm: llms[0], apiKey: "" },
+  });
 
   useEffect(() => {
     if (endDivRef.current) {
@@ -69,12 +83,32 @@ function ChessBoard() {
     }
   }, [allMovesString]);
 
+  const handleSave = async () => {
+    playersRef.current = {
+      w: {
+        color: "White",
+        llm: llms.find((llm) => llm.model === whiteModalRef.current?.value)!,
+        apiKey: whiteApiKeyRef.current?.value ?? "",
+      },
+      b: {
+        color: "Black",
+        llm: llms.find((llm) => llm.model === blackModalRef.current?.value)!,
+        apiKey: blackApiKeyRef.current?.value ?? "",
+      },
+    };
+    setSavedMessage("Settings saved successfully!");
+    await delay(2);
+    setSavedMessage("");
+  };
+
   // Handle random moves between two players
   const makeMove = async () => {
     isMoveInProgress.current = true;
+    console.log("Making move...");
     const moves = game.moves();
     let currentTurn = "";
     let lastTurn = "";
+    let turnKey = game.turn();
     if (game.turn() === "w") {
       currentTurn = "White";
       lastTurn = "Black";
@@ -87,7 +121,7 @@ function ChessBoard() {
     else {
       const canvas = await html2canvas(document.getElementById("cb")!);
       const img = canvas.toDataURL("image/png");
-      // console.log(img);
+      console.log(img);
       // move = moves[Math.floor(Math.random() * moves.length)];
       const movesToStrings = moves.map((move) => describeMove(move));
       for (let retry = 0; retry < 1; retry++) {
@@ -102,11 +136,11 @@ function ChessBoard() {
           const nextMove = await getNextMove({
             currentStateImage: img,
             allMoves: movesToStrings,
-            provider: "Google",
-            model: "gemini-1.5-flash",
+            provider: playersRef.current[turnKey]?.llm.provider!,
+            model: playersRef.current[turnKey]?.llm.model!,
             color: game.turn() === "w" ? "White" : "Black",
             lastMove: lastMoveString,
-            apiKey: process.env.NEXT_PUBLIC_GOOGLE_API_KEY!,
+            apiKey: playersRef.current[turnKey]?.apiKey!,
           });
           await delay(2);
           setThinkingMessage("");
@@ -117,6 +151,9 @@ function ChessBoard() {
           break;
         } catch (e) {
           console.error(`Error: ${e}. Trying again...`);
+        } finally {
+          isMoveInProgress.current = false;
+          setThinkingMessage("");
         }
       }
     }
@@ -142,24 +179,32 @@ function ChessBoard() {
       isMoveInProgress.current = false;
     } catch (e) {
       console.error(e);
-      alert("Error occured finding next move, make sure API key is correct.");
-      game.reset();
+      isMoveInProgress.current = false;
+      resetGame();
+      setErrorMessage(
+        "Error occured finding next move, make sure API key is correct."
+      );
+      await delay(3);
+      setErrorMessage("");
+    } finally {
+      isMoveInProgress.current = false;
     }
   };
 
   // Play the game loop with an interval
   const startGameLoop = () => {
+    console.log("starting loop");
     intervalRef.current = setInterval(() => {
-      // console.log(isMoveInProgress.current);
       if (!isMoveInProgress.current) makeMove();
     }, 100);
-    setGameInterval(intervalRef.current); // Store the interval for reference
+    // setGameInterval(intervalRef.current); // Store the interval for reference
   };
 
   // Handle play/pause functionality
   const togglePlayPause = () => {
     if (isPlaying) {
-      clearInterval(gameInterval as NodeJS.Timeout); // Pause the game by clearing interval
+      // clearInterval(gameInterval as NodeJS.Timeout); // Pause the game by clearing interval
+      clearInterval(intervalRef.current as NodeJS.Timeout); // Pause the game by clearing interval
     } else {
       startGameLoop(); // Start/resume the game loop
     }
@@ -168,18 +213,23 @@ function ChessBoard() {
 
   // Handle reset functionality
   const resetGame = () => {
-    clearInterval(gameInterval as NodeJS.Timeout); // Clear the interval
+    clearInterval(intervalRef.current as NodeJS.Timeout); // Clear the interval
+    isMoveInProgress.current = false;
+    // clearInterval(gameInterval as NodeJS.Timeout); // Clear the interval
     game.reset(); // Reset the game state
     setGamePosition(game.fen()); // Reset the game position
     setAllMovesString([]); // Reset the moves
     setIsGameOver(false); // Reset game over state
     setIsPlaying(false); // Reset play state
     setResultMessage("");
+    setThinkingMessage("");
+    console.log("Game reset!");
   };
 
   return (
     <div className="flex flex-row gap-10 items-start justify-start">
-      <div className="flex flex-col gap-10 ml-10 sticky mt-10 top-10">
+      <div className="flex flex-col gap-2 ml-10 sticky mt-10 top-10 bg-gray-100 pb-3 px-3 pt-2 rounded-lg">
+        <h3 className="text-xl font-semibold text-center">Chess Board</h3>
         <div id={"cb"} className="h-[450px] w-[450px]">
           <Chessboard
             id="BasicBoard"
@@ -205,14 +255,98 @@ function ChessBoard() {
             Reset
           </button>
         </div>
-        <div>{isGameOver && <span>{resultMessage}</span>}</div>
+        {isGameOver && <div>{resultMessage}</div>}
+        {errorMessage && <div className="text-red-500">{errorMessage}</div>}
       </div>
-      <div className="flex flex-col flex-grow gap-2 justify-start mt-10">
+      <div className="flex flex-col flex-grow gap-2 justify-start mt-10 bg-gray-100 rounded-lg w-full pt-3 h-[100vh]">
+        <h3 className="text-xl font-semibold text-center">Moves</h3>
         {allMovesString.map((moveString, index) => (
-          <div key={index}>{moveString}</div>
+          <div className="mx-3" key={index}>
+            {moveString}
+          </div>
         ))}
         <div ref={endDivRef} className="mb-10">
           {thinkingMessage}
+        </div>
+      </div>
+      <div className="flex flex-col items-start p-6 bg-gray-100 rounded-lg shadow-lg top-10 mt-10 sticky mr-10 w-full">
+        <div className="w-full">
+          <h2 className="text-2xl font-semibold mb-4 text-center">Settings</h2>
+        </div>
+
+        <div className="w-full mb-6">
+          <h3 className="text-lg font-medium mb-2">White Player</h3>
+          <div className="flex flex-col mb-4">
+            <label htmlFor="white-llm" className="mb-1">
+              Select LLM:
+            </label>
+            <select
+              id="white-llm"
+              ref={whiteModalRef}
+              className="border border-gray-300 rounded p-2"
+            >
+              {llms.map((llm) => (
+                <option key={llm.model} value={llm.model}>
+                  {llm.model}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="flex flex-col">
+            <label htmlFor="white-api-key" className="mb-1">
+              API Key:
+            </label>
+            <input
+              type="password"
+              ref={whiteApiKeyRef}
+              id="white-api-key"
+              className="border border-gray-300 rounded p-2"
+              placeholder="Enter API Key"
+            />
+          </div>
+        </div>
+
+        <div className="w-full">
+          <h3 className="text-lg font-medium mb-2">Black Player</h3>
+          <div className="flex flex-col mb-4">
+            <label htmlFor="black-llm" className="mb-1">
+              Select LLM:
+            </label>
+            <select
+              id="black-llm"
+              ref={blackModalRef}
+              className="border border-gray-300 rounded p-2"
+            >
+              {llms.map((llm) => (
+                <option key={llm.model} value={llm.model}>
+                  {llm.model}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="flex flex-col">
+            <label htmlFor="black-api-key" className="mb-1">
+              API Key:
+            </label>
+            <input
+              type="password"
+              ref={blackApiKeyRef}
+              id="black-api-key"
+              className="border border-gray-300 rounded p-2"
+              placeholder="Enter API Key"
+            />
+          </div>
+        </div>
+        <div>
+          <button
+            onClick={handleSave}
+            className="mt-4 bg-blue-500 text-white rounded p-2 px-4 hover:bg-blue-600"
+          >
+            Save
+          </button>
+          {savedMessage && (
+            <span className="text-green-500 text-sm ml-2">{savedMessage}</span>
+          )}
         </div>
       </div>
     </div>

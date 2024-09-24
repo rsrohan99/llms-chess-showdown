@@ -5,19 +5,10 @@ import { createAnthropic } from "@ai-sdk/anthropic";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { createMistral } from "@ai-sdk/mistral";
 import { generateText } from "ai";
-import { LLMProvider } from "../utils/models";
-
-interface NextMoveInput {
-  currentStateImage: string;
-  allMoves: string[];
-  provider: LLMProvider;
-  model: string;
-  color: "White" | "Black";
-  lastMove: string;
-  apiKey: string;
-}
+import { NextMoveInput } from "../utils/types";
 
 export async function getNextMove(input: NextMoveInput) {
+  console.log(`Getting next move from ${input.provider} ${input.model}...`);
   const {
     currentStateImage,
     allMoves,

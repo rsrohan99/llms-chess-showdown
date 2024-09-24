@@ -1,9 +1,4 @@
-export type LLMProvider = "OpenAI" | "Google" | "Anthropic" | "Mixtral";
-
-export interface MultiModalLLM {
-  provider: LLMProvider;
-  model: string;
-}
+import { MultiModalLLM } from "./types";
 
 export const llms: MultiModalLLM[] = [
   { provider: "OpenAI", model: "gpt-4o" },
