@@ -58,7 +58,6 @@ function ChessBoard() {
   const [allMovesString, setAllMovesString] = useState([]);
   const [isPlaying, setIsPlaying] = useState(false); // Play/Pause state
   const [isGameOver, setIsGameOver] = useState(false); // Game over state
-  // const [gameInterval, setGameInterval] = useState<NodeJS.Timeout | null>(null); // Reference to the interval
   const intervalRef = useRef<NodeJS.Timeout>(null); // For maintaining interval across renders
   const endDivRef = useRef<HTMLDivElement>(null);
   const [thinkingMessage, setThinkingMessage] = useState("");
@@ -197,13 +196,11 @@ function ChessBoard() {
     intervalRef.current = setInterval(() => {
       if (!isMoveInProgress.current) makeMove();
     }, 100);
-    // setGameInterval(intervalRef.current); // Store the interval for reference
   };
 
   // Handle play/pause functionality
   const togglePlayPause = () => {
     if (isPlaying) {
-      // clearInterval(gameInterval as NodeJS.Timeout); // Pause the game by clearing interval
       clearInterval(intervalRef.current as NodeJS.Timeout); // Pause the game by clearing interval
     } else {
       startGameLoop(); // Start/resume the game loop
@@ -215,7 +212,6 @@ function ChessBoard() {
   const resetGame = () => {
     clearInterval(intervalRef.current as NodeJS.Timeout); // Clear the interval
     isMoveInProgress.current = false;
-    // clearInterval(gameInterval as NodeJS.Timeout); // Clear the interval
     game.reset(); // Reset the game state
     setGamePosition(game.fen()); // Reset the game position
     setAllMovesString([]); // Reset the moves
@@ -228,7 +224,7 @@ function ChessBoard() {
 
   return (
     <div className="flex flex-row gap-10 items-start justify-start">
-      <div className="flex flex-col gap-2 ml-10 sticky mt-10 top-10 bg-gray-100 pb-3 px-3 pt-2 rounded-lg">
+      <div className="flex flex-col gap-2 ml-10 sticky mt-5 top-20 bg-gray-100 pb-3 px-3 pt-2 rounded-lg">
         <h3 className="text-xl font-semibold text-center">Chess Board</h3>
         <div id={"cb"} className="h-[450px] w-[450px]">
           <Chessboard
@@ -258,24 +254,24 @@ function ChessBoard() {
         {isGameOver && <div>{resultMessage}</div>}
         {errorMessage && <div className="text-red-500">{errorMessage}</div>}
       </div>
-      <div className="flex flex-col flex-grow gap-2 justify-start mt-10 bg-gray-100 rounded-lg w-full pt-3 h-[100vh]">
+      <div className="flex flex-col flex-grow gap-2 justify-start mt-5 bg-gray-100 rounded-lg w-full pt-3 h-[90vh]">
         <h3 className="text-xl font-semibold text-center">Moves</h3>
         {allMovesString.map((moveString, index) => (
           <div className="mx-3" key={index}>
             {moveString}
           </div>
         ))}
-        <div ref={endDivRef} className="mb-10">
+        <div ref={endDivRef} className="mb-10 mx-3">
           {thinkingMessage}
         </div>
       </div>
-      <div className="flex flex-col items-start p-6 bg-gray-100 rounded-lg shadow-lg top-10 mt-10 sticky mr-10 w-full">
+      <div className="flex flex-col items-start p-6 bg-gray-100 rounded-lg shadow-lg top-20 mt-5 sticky mr-10 w-full">
         <div className="w-full">
           <h2 className="text-2xl font-semibold mb-4 text-center">Settings</h2>
         </div>
 
         <div className="w-full mb-6">
-          <h3 className="text-lg font-medium mb-2">White Player</h3>
+          <h3 className="text-lg font-medium mb-2">White</h3>
           <div className="flex flex-col mb-4">
             <label htmlFor="white-llm" className="mb-1">
               Select LLM:
@@ -307,7 +303,7 @@ function ChessBoard() {
         </div>
 
         <div className="w-full">
-          <h3 className="text-lg font-medium mb-2">Black Player</h3>
+          <h3 className="text-lg font-medium mb-2">Black</h3>
           <div className="flex flex-col mb-4">
             <label htmlFor="black-llm" className="mb-1">
               Select LLM:
