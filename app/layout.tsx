@@ -31,6 +31,7 @@ export default function RootLayout({
                 by{" "}
                 <a
                   target="_blank"
+                  // @ts-expect-error
                   href={metadata.authors.url}
                   className="hover:underline hover:text-blue-300"
                 >
