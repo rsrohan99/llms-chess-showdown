@@ -44,24 +44,30 @@ export async function getNextMove(input: NextMoveInput) {
 ---
 ${allMoves.map((move, index) => `${index + 1} - ${move}`).join("\n")}
 ---
-Now think very deeply and carefully about all your possible moves and their consequences. After thinking very deeply, just output the number of the move that you think will give you the best chance of winning the game. The number of the best move for you is: `;
+Now think very deeply and carefully about all your possible moves and their consequences. After thinking very deeply, just output the number of the move that you think will give you the best chance of winning the game. The number of the best move for you is(MUST be between 1 and ${
+    allMoves.length
+  }): `;
   console.log(nextMovePrompt);
-  const nextMove = await generateText({
-    model: llm,
-    messages: [
-      { role: "system", content: systemPrompt },
-      {
-        role: "user",
-        content: [
-          { type: "image", image: currentStateImage },
-          { type: "text", text: nextMovePrompt },
-        ],
-      },
-    ],
-    maxTokens: 1,
-    temperature: 0.1,
-  });
-  const nextMoveNumber = nextMove.text;
-  console.log(nextMoveNumber);
-  return parseInt(nextMoveNumber) - 1;
+  try {
+    const nextMove = await generateText({
+      model: llm,
+      messages: [
+        { role: "system", content: systemPrompt },
+        {
+          role: "user",
+          content: [
+            { type: "image", image: currentStateImage },
+            { type: "text", text: nextMovePrompt },
+          ],
+        },
+      ],
+      maxTokens: 2,
+      temperature: 0.7,
+    });
+    const nextMoveNumber = parseInt(nextMove.text);
+    console.log(nextMoveNumber);
+    return nextMoveNumber - 1;
+  } catch (e) {
+    throw new Error(`LLM Error, make sure api key is correct.`);
+  }
 }
