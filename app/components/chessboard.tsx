@@ -8,6 +8,10 @@ import { CustomSquareProps } from "react-chessboard/dist/chessboard/types";
 import { describeMove } from "../utils/moves";
 import { getNextMove } from "../actions/llm";
 
+function delay(seconds: number) {
+  return new Promise((resolve) => setTimeout(resolve, seconds * 1000));
+}
+
 const CustomSquareRenderer = forwardRef<HTMLDivElement, CustomSquareProps>(
   (props, ref) => {
     const { children, square, squareColor, style } = props;
@@ -83,38 +87,38 @@ function ChessBoard() {
     else {
       const canvas = await html2canvas(document.getElementById("cb")!);
       const img = canvas.toDataURL("image/png");
-      console.log(img);
-      move = moves[Math.floor(Math.random() * moves.length)];
-      // const movesToStrings = moves.map((move) => describeMove(move));
-      // for (let retry = 0; retry < 1; retry++) {
-      //   try {
-      //     console.log(`Trying to get next move (try: ${retry + 1})...`);
-      //     const previousMoves = game.history();
-      //     console.log(previousMoves);
-      //     const lastMove = previousMoves[previousMoves.length - 1] ?? "";
-      //     const lastMoveString = lastMove
-      //       ? `${lastTurn}: ${describeMove(lastMove)}`
-      //       : "No previous moves yet.";
-      //     setThinkingMessage(`${currentTurn} is thinking...`);
-      //     const nextMove = await getNextMove({
-      //       currentStateImage: img,
-      //       allMoves: movesToStrings,
-      //       provider: "Google",
-      //       model: "gemini-1.5-flash",
-      //       color: game.turn() === "w" ? "White" : "Black",
-      //       lastMove: lastMoveString,
-      //       apiKey: process.env.NEXT_PUBLIC_GOOGLE_API_KEY!,
-      //     });
-      //     setThinkingMessage("");
-      //     if (nextMove < 0 || nextMove >= moves.length) {
-      //       throw new Error(`Invalid move: ${nextMove}`);
-      //     }
-      //     move = moves[nextMove];
-      //     break;
-      //   } catch (e) {
-      //     console.error(`Error: ${e}. Trying again...`);
-      //   }
-      // }
+      // console.log(img);
+      // move = moves[Math.floor(Math.random() * moves.length)];
+      const movesToStrings = moves.map((move) => describeMove(move));
+      for (let retry = 0; retry < 1; retry++) {
+        try {
+          console.log(`Trying to get next move (try: ${retry + 1})...`);
+          const previousMoves = game.history();
+          const lastMove = previousMoves[previousMoves.length - 1] ?? "";
+          const lastMoveString = lastMove
+            ? `${lastTurn}: ${describeMove(lastMove)}`
+            : "No previous moves yet.";
+          setThinkingMessage(`${currentTurn} is thinking...`);
+          const nextMove = await getNextMove({
+            currentStateImage: img,
+            allMoves: movesToStrings,
+            provider: "Google",
+            model: "gemini-1.5-flash",
+            color: game.turn() === "w" ? "White" : "Black",
+            lastMove: lastMoveString,
+            apiKey: process.env.NEXT_PUBLIC_GOOGLE_API_KEY!,
+          });
+          await delay(2);
+          setThinkingMessage("");
+          if (nextMove < 0 || nextMove >= moves.length) {
+            throw new Error(`Invalid move: ${nextMove}`);
+          }
+          move = moves[nextMove];
+          break;
+        } catch (e) {
+          console.error(`Error: ${e}. Trying again...`);
+        }
+      }
     }
     try {
       const moveString = `${currentTurn}: ${describeMove(move)}`;
@@ -134,6 +138,7 @@ function ChessBoard() {
         setIsGameOver(true);
         clearInterval(intervalRef.current as NodeJS.Timeout); // Stop the game when it's over
       }
+      await delay(2);
       isMoveInProgress.current = false;
     } catch (e) {
       console.error(e);
@@ -145,9 +150,9 @@ function ChessBoard() {
   // Play the game loop with an interval
   const startGameLoop = () => {
     intervalRef.current = setInterval(() => {
-      console.log(isMoveInProgress.current);
+      // console.log(isMoveInProgress.current);
       if (!isMoveInProgress.current) makeMove();
-    }, 50);
+    }, 100);
     setGameInterval(intervalRef.current); // Store the interval for reference
   };
 

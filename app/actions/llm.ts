@@ -44,9 +44,7 @@ export async function getNextMove(input: NextMoveInput) {
 ---
 ${allMoves.map((move, index) => `${index + 1} - ${move}`).join("\n")}
 ---
-Now think very deeply and carefully about all your possible moves and their consequences. After thinking very deeply, just output the number of the move that you think will give you the best chance of winning the game. The number of the best move for you is(MUST be between 1 and ${
-    allMoves.length
-  }): `;
+Now think very deeply and carefully about all your possible moves and their consequences. After thinking very deeply, just output the number of the move that you think will give you the best chance of winning the game. The number of the best move for you is: `;
   console.log(nextMovePrompt);
   try {
     const nextMove = await generateText({
