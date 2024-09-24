@@ -46,10 +46,6 @@ const CustomSquareRenderer = forwardRef<HTMLDivElement, CustomSquareProps>(
   }
 );
 
-function delay(seconds: number) {
-  return new Promise((resolve) => setTimeout(resolve, seconds * 1000));
-}
-
 function ChessBoard() {
   const game = useMemo(() => new Chess(), []);
   const [gamePosition, setGamePosition] = useState(game.fen());
@@ -58,6 +54,14 @@ function ChessBoard() {
   const [isGameOver, setIsGameOver] = useState(false); // Game over state
   const [gameInterval, setGameInterval] = useState<NodeJS.Timeout | null>(null); // Reference to the interval
   const intervalRef = useRef<NodeJS.Timeout>(null); // For maintaining interval across renders
+  const endDivRef = useRef<HTMLDivElement>(null);
+  const [thinkingMessage, setThinkingMessage] = useState("");
+
+  useEffect(() => {
+    if (endDivRef.current) {
+      endDivRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, []);
 
   // Handle random moves between two players
   const makeMove = async () => {
@@ -88,6 +92,7 @@ function ChessBoard() {
       //     const lastMoveString = lastMove
       //       ? `${lastTurn}: ${describeMove(lastMove)}`
       //       : "No previous moves yet.";
+      //     setThinkingMessage(`${currentTurn} is thinking...`);
       //     const nextMove = await getNextMove({
       //       currentStateImage: img,
       //       allMoves: movesToStrings,
@@ -97,6 +102,7 @@ function ChessBoard() {
       //       lastMove: lastMoveString,
       //       apiKey: process.env.NEXT_PUBLIC_GOOGLE_API_KEY!,
       //     });
+      //     setThinkingMessage("");
       //     if (nextMove < 0 || nextMove >= moves.length) {
       //       throw new Error(`Invalid move: ${nextMove}`);
       //     }
@@ -159,13 +165,6 @@ function ChessBoard() {
     setIsPlaying(false); // Reset play state
   };
 
-  // Reset game automatically if it's over
-  useEffect(() => {
-    if (isGameOver) {
-      resetGame();
-    }
-  }, [isGameOver]);
-
   return (
     <div className="flex flex-row gap-10 items-start justify-start">
       <div className="flex flex-col gap-10 ml-10 sticky mt-10 top-10">
@@ -186,7 +185,15 @@ function ChessBoard() {
           >
             {isPlaying ? "Pause" : "Play"}
           </button>
-          {!isPlaying && <span>Game Paused</span>}
+          {!isPlaying && (
+            <span>
+              {isGameOver
+                ? allMovesString[allMovesString.length - 1]
+                : !isPlaying
+                ? "Game Paused"
+                : ""}
+            </span>
+          )}
           <button
             className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
             onClick={resetGame}
@@ -195,10 +202,13 @@ function ChessBoard() {
           </button>
         </div>
       </div>
-      <div className="flex flex-col flex-grow gap-2 justify-start">
+      <div className="flex flex-col flex-grow gap-2 justify-start mt-10">
         {allMovesString.map((moveString, index) => (
           <div key={index}>{moveString}</div>
         ))}
+        <div ref={endDivRef} className="mb-10">
+          {thinkingMessage}
+        </div>
       </div>
     </div>
   );
