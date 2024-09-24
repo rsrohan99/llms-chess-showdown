@@ -57,6 +57,7 @@ function ChessBoard() {
   const endDivRef = useRef<HTMLDivElement>(null);
   const [thinkingMessage, setThinkingMessage] = useState("");
   const [resultMessage, setResultMessage] = useState("");
+  const isMoveInProgress = useRef(false);
 
   useEffect(() => {
     if (endDivRef.current) {
@@ -66,6 +67,7 @@ function ChessBoard() {
 
   // Handle random moves between two players
   const makeMove = async () => {
+    isMoveInProgress.current = true;
     const moves = game.moves();
     let currentTurn = "";
     let lastTurn = "";
@@ -79,9 +81,9 @@ function ChessBoard() {
     let move = "";
     if (moves.length === 1) move = moves[0];
     else {
-      // const canvas = await html2canvas(document.getElementById("cb")!);
-      // const img = canvas.toDataURL("image/png");
-      // console.log(img);
+      const canvas = await html2canvas(document.getElementById("cb")!);
+      const img = canvas.toDataURL("image/png");
+      console.log(img);
       move = moves[Math.floor(Math.random() * moves.length)];
       // const movesToStrings = moves.map((move) => describeMove(move));
       // for (let retry = 0; retry < 1; retry++) {
@@ -132,6 +134,7 @@ function ChessBoard() {
         setIsGameOver(true);
         clearInterval(intervalRef.current as NodeJS.Timeout); // Stop the game when it's over
       }
+      isMoveInProgress.current = false;
     } catch (e) {
       console.error(e);
       alert("Error occured finding next move, make sure API key is correct.");
@@ -142,8 +145,9 @@ function ChessBoard() {
   // Play the game loop with an interval
   const startGameLoop = () => {
     intervalRef.current = setInterval(() => {
-      makeMove();
-    }, 50); // Make a move every second
+      console.log(isMoveInProgress.current);
+      if (!isMoveInProgress.current) makeMove();
+    }, 50);
     setGameInterval(intervalRef.current); // Store the interval for reference
   };
 
@@ -188,11 +192,7 @@ function ChessBoard() {
           >
             {isPlaying ? "Pause" : "Play"}
           </button>
-          {!isPlaying && (
-            <span>
-              {isGameOver ? resultMessage : !isPlaying ? "Game Paused" : ""}
-            </span>
-          )}
+          {!isPlaying && <span>Game Paused</span>}
           <button
             className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
             onClick={resetGame}
@@ -200,6 +200,7 @@ function ChessBoard() {
             Reset
           </button>
         </div>
+        <div>{isGameOver && <span>{resultMessage}</span>}</div>
       </div>
       <div className="flex flex-col flex-grow gap-2 justify-start mt-10">
         {allMovesString.map((moveString, index) => (
