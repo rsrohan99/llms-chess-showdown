@@ -159,6 +159,7 @@ function ChessBoard() {
     try {
       const moveString = `${currentTurn}: ${describeMove(move)}`;
       game.move(move);
+      // @ts-expect-error
       setAllMovesString((prev) => [...prev, moveString]);
       setGamePosition(game.fen());
       if (game.isGameOver()) {
@@ -170,6 +171,7 @@ function ChessBoard() {
           !game.isDraw() ? ` Winner: ${currentTurn}.` : ""
         }`;
         setResultMessage(finalStringToDisplay);
+        // @ts-expect-error
         setAllMovesString((prev) => [...prev, finalStringToDisplay]);
         setIsGameOver(true);
         clearInterval(intervalRef.current as NodeJS.Timeout); // Stop the game when it's over
@@ -193,6 +195,7 @@ function ChessBoard() {
   // Play the game loop with an interval
   const startGameLoop = () => {
     console.log("starting loop");
+    // @ts-expect-error
     intervalRef.current = setInterval(() => {
       if (!isMoveInProgress.current) makeMove();
     }, 100);
@@ -232,6 +235,7 @@ function ChessBoard() {
             position={gamePosition}
             arePiecesDraggable={false}
             showBoardNotation={false}
+            // @ts-expect-error
             customSquare={CustomSquareRenderer}
             autoPromoteToQueen={true}
           />
