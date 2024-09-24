@@ -56,12 +56,13 @@ function ChessBoard() {
   const intervalRef = useRef<NodeJS.Timeout>(null); // For maintaining interval across renders
   const endDivRef = useRef<HTMLDivElement>(null);
   const [thinkingMessage, setThinkingMessage] = useState("");
+  const [resultMessage, setResultMessage] = useState("");
 
   useEffect(() => {
     if (endDivRef.current) {
-      endDivRef.current.scrollIntoView({ behavior: "smooth" });
+      endDivRef.current.scrollIntoView();
     }
-  }, []);
+  }, [allMovesString]);
 
   // Handle random moves between two players
   const makeMove = async () => {
@@ -126,6 +127,7 @@ function ChessBoard() {
         const finalStringToDisplay = `Game Over: ${reason}.${
           !game.isDraw() ? ` Winner: ${currentTurn}.` : ""
         }`;
+        setResultMessage(finalStringToDisplay);
         setAllMovesString((prev) => [...prev, finalStringToDisplay]);
         setIsGameOver(true);
         clearInterval(intervalRef.current as NodeJS.Timeout); // Stop the game when it's over
@@ -163,6 +165,7 @@ function ChessBoard() {
     setAllMovesString([]); // Reset the moves
     setIsGameOver(false); // Reset game over state
     setIsPlaying(false); // Reset play state
+    setResultMessage("");
   };
 
   return (
@@ -187,11 +190,7 @@ function ChessBoard() {
           </button>
           {!isPlaying && (
             <span>
-              {isGameOver
-                ? allMovesString[allMovesString.length - 1]
-                : !isPlaying
-                ? "Game Paused"
-                : ""}
+              {isGameOver ? resultMessage : !isPlaying ? "Game Paused" : ""}
             </span>
           )}
           <button
