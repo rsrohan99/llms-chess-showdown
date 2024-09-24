@@ -3,9 +3,9 @@
 import { createOpenAI } from "@ai-sdk/openai";
 import { createAnthropic } from "@ai-sdk/anthropic";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
+import { createMistral } from "@ai-sdk/mistral";
 import { generateText } from "ai";
-
-type LLMProvider = "OpenAI" | "Google" | "Anthropic";
+import { LLMProvider } from "../utils/models";
 
 interface NextMoveInput {
   currentStateImage: string;
@@ -31,6 +31,7 @@ export async function getNextMove(input: NextMoveInput) {
     OpenAI: createOpenAI,
     Google: createGoogleGenerativeAI,
     Anthropic: createAnthropic,
+    Mixtral: createMistral,
   };
   const createLlmProvider = llmMap[provider] ?? createOpenAI;
   const llmProvider = createLlmProvider({
@@ -44,7 +45,9 @@ export async function getNextMove(input: NextMoveInput) {
 ---
 ${allMoves.map((move, index) => `${index + 1} - ${move}`).join("\n")}
 ---
-Now think very deeply and carefully about all your possible moves and their consequences. After thinking very deeply, just output the number of the move that you think will give you the best chance of winning the game. The number of the best move for you is: `;
+Now think very deeply and carefully about all your possible moves and their consequences. After thinking very deeply, just output the number of the move that you think will give you the best chance of winning the game. The number of the best move for you is(MUST be a number from 1 to ${
+    allMoves.length
+  }): `;
   console.log(nextMovePrompt);
   try {
     const nextMove = await generateText({
@@ -62,8 +65,8 @@ Now think very deeply and carefully about all your possible moves and their cons
       maxTokens: 2,
       temperature: 0.7,
     });
+    console.log(nextMove.text);
     const nextMoveNumber = parseInt(nextMove.text);
-    console.log(nextMoveNumber);
     return nextMoveNumber - 1;
   } catch (e) {
     throw new Error(`LLM Error, make sure api key is correct.`);

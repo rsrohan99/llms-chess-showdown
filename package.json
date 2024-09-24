@@ -11,6 +11,7 @@
   "dependencies": {
     "@ai-sdk/anthropic": "^0.0.50",
     "@ai-sdk/google": "^0.0.48",
+    "@ai-sdk/mistral": "^0.0.41",
     "@ai-sdk/openai": "^0.0.61",
     "ai": "^3.4.1",
     "chess.js": "^1.0.0-beta.8",
