@@ -1,3 +1,5 @@
+https://github.com/user-attachments/assets/5437c3bf-975c-4877-bbae-fd9e83824254
+
 ### Are multi-modal LLMs any good at playing chess?
 
 Tried to find that out in this fun little project I made where two multi-modal LLMs play chess.
