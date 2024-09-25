@@ -18,7 +18,7 @@ export default function RootLayout({
   const socials = {
     X: "https://x.com/clusteredbytes",
     GitHub: "https://github.com/rsrohan99",
-    LinkedIn: "https://linkedin.com/in/rs-rohan-57a336278",
+    // LinkedIn: "https://linkedin.com/in/rs-rohan-57a336278",
   };
   return (
     <html lang="en">
@@ -35,7 +35,7 @@ export default function RootLayout({
                   href={metadata.authors.url}
                   className="hover:underline hover:text-blue-300"
                 >
-                  RS Rohan
+                  Rohan
                 </a>
               </span>
             </h1>
