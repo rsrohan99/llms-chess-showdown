@@ -10,6 +10,9 @@ import { getNextMove } from "../actions/llm";
 import { IPlayer } from "../utils/types";
 import { llms } from "../utils/models";
 
+const LLM_THINK_DELAY = 0.5;
+const LOOP_DELAY = 0.5;
+
 function delay(seconds: number) {
   return new Promise((resolve) => setTimeout(resolve, seconds * 1000));
 }
@@ -120,7 +123,7 @@ function ChessBoard() {
       if (isPlayingRef.current) {
         await makeMove();
       }
-      await delay(2);
+      await delay(LOOP_DELAY);
     }
     console.log("Game loop ended");
   };
@@ -214,7 +217,7 @@ function ChessBoard() {
       setErrorMessage(
         "Error occured finding next move, make sure API key is correct."
       );
-      await delay(3);
+      await delay(LLM_THINK_DELAY);
       setErrorMessage("");
     } finally {
       isMoveInProgress.current = false;

@@ -18,7 +18,6 @@ export default function RootLayout({
   const socials = {
     X: "https://x.com/clusteredbytes",
     GitHub: "https://github.com/rsrohan99",
-    // LinkedIn: "https://linkedin.com/in/rs-rohan-57a336278",
   };
   return (
     <html lang="en">
