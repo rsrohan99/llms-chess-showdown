@@ -36,7 +36,7 @@ export async function getNextMove(input: NextMoveInput) {
 ---
 ${allMoves.map((move, index) => `${index + 1} - ${move}`).join("\n")}
 ---
-Now think very deeply and carefully about all your possible moves and their consequences. After thinking very deeply, just output the number of the move that you think will give you the best chance of winning the game. The number of the best move for you is(MUST be a number from 1 to ${
+Now think very deeply and carefully about all your possible moves and their consequences. After thinking very deeply, just output the number of the move that you think will give you the best chance of winning the game. Your output must be JUST THE NUMBER of the best move, nothing else. No explanation required, JUST OUTPUT THE NUMBER of the best move. The number of the best move for you is(MUST be A NUMBER from 1 to ${
     allMoves.length
   }): `;
   console.log(nextMovePrompt);
