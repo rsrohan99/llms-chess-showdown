@@ -12,4 +12,4 @@ Tools Used:
 
 - [Vercel AI SDK](https://sdk.vercel.ai/) as AI Library.
 - [chess.js](https://github.com/jhlywa/chess.js) for game logic.
-- [react-chessboard](https://github.com/Clariity/react-chessboard) for the UI.
+- [react-chessboard](https://github.com/Clariity/react-chessboard) for the chessboard UI.
