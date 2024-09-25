@@ -17,7 +17,7 @@ export default function RootLayout({
 }>) {
   const socials = {
     X: "https://x.com/clusteredbytes",
-    GitHub: "https://github.com/rsrohan99",
+    GitHub: "https://github.com/rsrohan99/llms-chess-showdown",
   };
   return (
     <html lang="en">
