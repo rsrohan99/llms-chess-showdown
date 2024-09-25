@@ -151,7 +151,6 @@ function ChessBoard() {
       const canvas = await html2canvas(document.getElementById("cb")!);
       const img = canvas.toDataURL("image/png");
       // console.log(img);
-      move = moves[Math.floor(Math.random() * moves.length)];
       const movesToStrings = moves.map((move) => describeMove(move));
       for (let retry = 0; retry < 1; retry++) {
         try {
@@ -171,7 +170,7 @@ function ChessBoard() {
             lastMove: lastMoveString,
             apiKey: playersRef.current[turnKey]?.apiKey!,
           });
-          await delay(3);
+          await delay(LLM_THINK_DELAY);
           setThinkingMessage("");
           if (nextMove < 0 || nextMove >= moves.length) {
             throw new Error(`Invalid move: ${nextMove}`);
@@ -217,7 +216,7 @@ function ChessBoard() {
       setErrorMessage(
         "Error occured finding next move, make sure API key is correct."
       );
-      await delay(LLM_THINK_DELAY);
+      await delay(3);
       setErrorMessage("");
     } finally {
       isMoveInProgress.current = false;

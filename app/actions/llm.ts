@@ -60,6 +60,7 @@ Now think very deeply and carefully about all your possible moves and their cons
     const nextMoveNumber = parseInt(nextMove.text);
     return nextMoveNumber - 1;
   } catch (e) {
+    console.error(e);
     throw new Error(`LLM Error, make sure api key is correct.`);
   }
 }
