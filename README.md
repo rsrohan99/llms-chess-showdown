@@ -8,9 +8,8 @@ After each move, I'm giving the image of the current board and asking it to make
 
 Try it out: https://llms-chess.vercel.app/
 
-GitHub: https://github.com/rsrohan99/llms-chess-showdown
-
 Tools Used:
-[Vercel AI SDK](https://sdk.vercel.ai/) for as AI Library.
-[chess.js](https://github.com/jhlywa/chess.js) for game logic.
-[react-chessboard](https://github.com/Clariity/react-chessboard) for the UI.
+
+- [Vercel AI SDK](https://sdk.vercel.ai/) for as AI Library.
+- [chess.js](https://github.com/jhlywa/chess.js) for game logic.
+- [react-chessboard](https://github.com/Clariity/react-chessboard) for the UI.
